@@ -107,6 +107,187 @@ omega: 600.50
 
 Por esta razón, para validar el cálculo de posición utilicé distancias coherentes con las coordenadas esperadas. El algoritmo de trilateración funciona con las coordenadas fijas de las antenas y las distancias entregadas en la solicitud.
 
-## Falta por Desarrollar/Solucionar
+# Cómo utilizar/probar el nivel 1
 
-En cuanto a la interfaz, falta solucionar resultados en botón "Guardar" y "Calcular posición y mensaje".
+Desde la documentación automática de FastAPI: http://127.0.0.1:8000/docs
+
+Buscar el endpoint: POST /survival/
+
+Presionar `Try it out` y usa el siguiente JSON:
+
+{
+  "antennas": [
+    {
+      "name": "alpha",
+      "distance": 485.91,
+      "message": ["necesitamos", "", "", "suministros", ""]
+    },
+    {
+      "name": "beta",
+      "distance": 266.02,
+      "message": ["", "ayuda", "", "", "medicos"]
+    },
+    {
+      "name": "omega",
+      "distance": 600.50,
+      "message": ["necesitamos", "", "con", "", ""]
+    }
+  ]
+}
+
+Presionar: `Execute`
+
+Respuesta esperada:
+
+{
+  "position": {
+    "x": -99.68,
+    "y": 74.77
+  },
+  "message": "necesitamos ayuda con suministros medicos"
+}
+
+# Cómo utilizar/probar el nivel 2
+
+El Nivel 2 permite registrar la información de cada antena por separado.
+
+Primero ingresar a: http://127.0.0.1:8000/docs
+
+1) Registrar `alpha`
+
+Buscar el endpoint: POST /survival_split/{antenna_name}
+
+En `antenna_name` escribir: `alpha`
+
+Luego en Body: 
+
+{
+  "distance": 485.91,
+  "message": ["necesitamos", "", "", "suministros", ""]
+}
+
+Presionar: `Execute`.
+
+2) Registrar `beta`
+
+En `antenna_name` escribir: `beta`
+
+Luego en Body: 
+
+{
+  "distance": 266.02,
+  "message": ["", "ayuda", "", "", "medicos"]
+}
+
+Presionar: `Execute`.
+
+3) Registrar `omega`
+
+En `antenna_name` escribir: `omega`
+
+Luego en Body: 
+
+{
+  "distance": 600.50,
+  "message": ["necesitamos", "", "con", "", ""]
+}
+
+Presionar: `Execute`.
+
+4) Obtener resultado final
+
+Buscar el endpoint: GET /survival_split/
+
+Presionar `Try it out` y luego `Execute`.
+
+Respuesta esperada:
+
+{
+  "position": {
+    "x": -99.68,
+    "y": 74.77
+  },
+  "message": "necesitamos ayuda con suministros medicos"
+}
+
+(Si falta registrar alguna antena, el endpoint responderá con error indicando qué datos faltan)
+
+### Pruebas
+
+a) Prueba 1: `Get /survival_split/` sin datos
+
+(Primero limpia los datos reiniciando Uvicorn)
+
+Luego en /docs, sin haber hecho ningún POST, ejecuta: 
+        `Get /survival_split/ sin datos`
+
+Te dará una una respuesta de error 404:
+
+{
+  "detail": {
+    "message": "Faltan datos para calcular la posición y el mensaje",
+    "missing_antennas": ["alpha", "beta", "omega"]
+  }
+}
+
+Eso prueba que la API detecta cuando faltan antenas.
+
+b) Prueba 2: `POST /survival_split/{antenna_name}` con antena inválida
+
+En el campo `antenna_name`, se escribo: gamma
+
+En el Body pongo (JSON):
+
+{
+  "distance": 100,
+  "message": ["hola"]
+}
+
+Y lo ejecuto.
+
+Debería responder 404:
+
+{
+  "detail": "Antena desconocida"
+}
+
+Eso prueba que la API rechaza antenas que no sean `alpha`, `beta` u `omega`
+
+
+## Cómo utilizar la interfaz (Probar nivel 3)
+
+1) Primero registra `alpha`.
+
+Antena: alpha
+Distancia: 485.91
+Mensaje (JSON): ["necesitamos", "", "", "suministros", ""]
+
+Presiona: Guardar antena
+
+2) Luego registra `beta`.
+
+Antena: beta
+Distancia: 266.02
+Mensaje (JSON): ["", "ayuda", "", "", "medicos"]
+
+Presiona: Guardar antena
+
+3) Luego registra `omega`.
+
+Antena: omega
+Distancia: 600.50
+Mensaje (JSON): ["necesitamos", "", "con", "", ""]
+
+Presiona: Guardar antena
+
+4) Finalmente presiona: Calcular posición y mensaje
+
+Y te mostrará en la "Respuesta" (JSON):
+
+{
+  "position": {
+    "x": -99.68,
+    "y": 74.77
+  },
+  "message": "necesitamos ayuda con suministros medicos"
+}
