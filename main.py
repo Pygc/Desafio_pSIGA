@@ -192,41 +192,41 @@ def user_interface():
         <title>Operación Eco del Búnker</title>
         <style>
             body {
-                font-family: Atial, sans-serif;
+                font-family: Arial, sans-serif;
                 margin: 40px;
                 background-color: #f4f4f4;
             }
-            
+
             h1 {
                 color: #222;
             }
-            
+
             .container {
                 background: white;
                 padding: 20px;
                 border-radius: 8px;
                 max-width: 700px;
             }
-            
+
             label {
                 display: block;
                 margin-top: 12px;
                 font-weight: bold;
             }
-            
+
             input, textarea, select {
                 width: 100%;
                 padding: 8px;
                 margin-top: 4px;
                 box-sizing: border-box;
             }
-            
+
             button {
                 margin-top: 16px;
                 padding: 10px 16px;
                 cursor: pointer;
             }
-            
+
             pre {
                 background: #222;
                 color: #0f0;
@@ -239,44 +239,44 @@ def user_interface():
     <body>
         <div class="container">
             <h1>Operación Eco del Búnker</h1>
-            
-            <h2>Registrar Antena</h2>
-            
+
+            <h2>Registrar antena</h2>
+
             <label>Antena</label>
-            <select id= "antennaName">
+            <select id="antennaName">
                 <option value="alpha">alpha</option>
                 <option value="beta">beta</option>
                 <option value="omega">omega</option>
             </select>
-            
+
             <label>Distancia</label>
-            <input id= "distance" type="number" step="0.01" placeholder= "Ej: 485.91">
-            
+            <input id="distance" type="number" step="0.01" placeholder="Ej: 485.91">
+
             <label>Mensaje</label>
-            <textarea id= "message" rows="3" placeholder= 'Ej: ["necesitamos", "", "", "suministros", ""]'></textarea>
-            
+            <textarea id="message" rows="3" placeholder='Ej: ["necesitamos", "", "", "suministros", ""]'></textarea>
+
             <button onclick="saveAntenna()">Guardar antena</button>
             <button onclick="calculate()">Calcular posición y mensaje</button>
-            
+
             <h2>Respuesta</h2>
             <pre id="result">Esperando datos...</pre>
         </div>
-        
+
         <script>
             async function saveAntenna() {
                 const antennaName = document.getElementById("antennaName").value;
                 const distance = parseFloat(document.getElementById("distance").value);
-                const messageText = document.getElemenById("message").value;
-                
+                const messageText = document.getElementById("message").value;
+
                 let message;
-                
+
                 try {
                     message = JSON.parse(messageText);
                 } catch (error) {
                     document.getElementById("result").textContent = "El mensaje debe ser un arreglo JSON válido.";
                     return;
                 }
-                
+
                 const response = await fetch(`/survival_split/${antennaName}`, {
                     method: "POST",
                     headers: {
@@ -287,11 +287,11 @@ def user_interface():
                         message: message
                     })
                 });
-                
+
                 const data = await response.json();
                 document.getElementById("result").textContent = JSON.stringify(data, null, 2);
             }
-            
+
             async function calculate() {
                 const response = await fetch("/survival_split/");
                 const data = await response.json();
