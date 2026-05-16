@@ -214,14 +214,14 @@ Respuesta esperada:
 
 ### Pruebas
 
-a) Prueba 1: `Get /survival_split/` sin datos
+a) Prueba 1: `Get /survival_split/` sin datos.
 
-(Primero limpia los datos reiniciando Uvicorn)
+(Primero se limpia los datos reiniciando Uvicorn)
 
 Luego en /docs, sin haber hecho ningún POST, ejecuta: 
-        `Get /survival_split/ sin datos`
+        `Get /survival_split/`
 
-Te dará una una respuesta de error 404:
+Dará una respuesta de error 404:
 
 {
   "detail": {
@@ -232,7 +232,7 @@ Te dará una una respuesta de error 404:
 
 Eso prueba que la API detecta cuando faltan antenas.
 
-b) Prueba 2: `POST /survival_split/{antenna_name}` con antena inválida
+b) Prueba 2: `POST /survival_split/{antenna_name}` con antena inválida.
 
 En el campo `antenna_name`, se escribo: gamma
 
@@ -245,14 +245,108 @@ En el Body pongo (JSON):
 
 Y lo ejecuto.
 
-Debería responder 404:
+Dará una respuesta de error 404:
 
 {
   "detail": "Antena desconocida"
 }
 
-Eso prueba que la API rechaza antenas que no sean `alpha`, `beta` u `omega`
+Eso prueba que la API rechaza antenas que no sean `alpha`, `beta` u `omega`.
 
+c) Prueba 3: `POST /survival/` con mensaje incompleto.
+
+En el body pongo:
+
+{
+  "antennas": [
+    {
+      "name": "alpha",
+      "distance": 485.91,
+      "message": ["necesitamos", "", "", "", ""]
+    },
+    {
+      "name": "beta",
+      "distance": 266.02,
+      "message": ["", "ayuda", "", "", ""]
+    },
+    {
+      "name": "omega",
+      "distance": 600.50,
+      "message": ["", "", "con", "", ""]
+    }
+  ]
+}
+
+Y lo ejecuto.
+
+Dará una respuesta de error 404:
+
+{
+  "detail": "No se pudo reconstruir el mensaje completo"
+}
+
+Eso prueba que la API detecta cuando no puede armar el mensaje completo.
+
+d) Prueba 4: `POST /survival/` con antena faltante.
+
+Pongo este body, (que solo tiene dos antenas):
+
+{
+  "antennas": [
+    {
+      "name": "alpha",
+      "distance": 485.91,
+      "message": ["necesitamos", "", "", "suministros", ""]
+    },
+    {
+      "name": "beta",
+      "distance": 266.02,
+      "message": ["", "ayuda", "", "", "medicos"]
+    }
+  ]
+}
+
+Y lo ejecuto.
+
+Dará una respuesta de error 404:
+
+{
+  "detail": "Se necesitan las 3 antenas"
+}
+
+e) Prueba 5: flujo correcto después de errores.
+
+En `POST /survival/`, pongo este body:
+
+{
+  "antennas": [
+    {
+      "name": "alpha",
+      "distance": 485.91,
+      "message": ["necesitamos", "", "", "suministros", ""]
+    },
+    {
+      "name": "beta",
+      "distance": 266.02,
+      "message": ["", "ayuda", "", "", "medicos"]
+    },
+    {
+      "name": "omega",
+      "distance": 600.50,
+      "message": ["necesitamos", "", "con", "", ""]
+    }
+  ]
+}
+
+Dará una respuesta 200:
+
+{
+  "position": {
+    "x": -99.68,
+    "y": 74.77
+  },
+  "message": "necesitamos ayuda con suministros medicos"
+}
 
 ## Cómo utilizar la interfaz (Probar nivel 3)
 
